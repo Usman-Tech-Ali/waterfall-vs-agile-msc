@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Edit Task{% endblock %}
+
+{% block content %}
+<div style="max-width: 740px; margin: 0 auto;">
+
+  <!-- Edit Form Card -->
+  <div class="form-card form-card-wide" style="margin: 2rem auto 1.5rem;">
+    <h2>Edit Task</h2>
+
+    <form method="POST" action="{{ url_for('tasks.edit_task', task_id=task.id) }}">
+      <div class="form-group">
+        <label for="title">Title <span class="required">*</span></label>
+        <input type="text" id="title" name="title" required maxlength="120"
+               value="{{ task.title }}" placeholder="Task title">
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3"
+                  placeholder="Add more context...">{{ task.description or '' }}</textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="assignee_id">Assignee <span class="required">*</span></label>
+          <select id="assignee_id" name="assignee_id" required>
+            {% for user in users %}
+            <option value="{{ user.id }}"
+                    {{ 'selected' if task.assignee_id == user.id }}>{{ user.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="due_date">Due Date <span class="required">*</span></label>
+          <input type="date" id="due_date" name="due_date" required
+                 value="{{ task.due_date.strftime('%Y-%m-%d') }}">
+        </div>
+      </div>
+
+      <!-- CR-001 + Status in 3 columns -->
+      <div class="form-row-3">
+        <div class="form-group">
+          <label for="priority">Priority</label>
+          <select id="priority" name="priority">
+            {% for p in priority_options %}
+            <option value="{{ p }}" {{ 'selected' if task.priority == p }}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" name="category">
+            {% for c in category_options %}
+            <option value="{{ c }}" {{ 'selected' if task.category == c }}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            {% for s in status_options %}
+            <option value="{{ s }}" {{ 'selected' if task.status == s }}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{{ url_for('tasks.dashboard') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- CR-003: Comments Section -->
+  <div class="form-card form-card-wide" style="margin: 0 auto 2.5rem;">
+    <h3>Comments
+      {% set comment_count = task.comments.count() %}
+      {% if comment_count > 0 %}
+      <span style="font-family:var(--font-body);font-size:0.75rem;font-weight:600;
+                   background:var(--accent-dim);color:var(--accent-bright);
+                   padding:2px 8px;border-radius:20px;margin-left:0.5rem;
+                   vertical-align:middle;">{{ comment_count }}</span>
+      {% endif %}
+    </h3>
+
+    {% if task.comments.all() %}
+    <ul class="comment-list">
+      {% for comment in task.comments %}
+      <li class="comment-item">
+        <div class="comment-meta">
+          <span class="comment-author">{{ comment.author.username }}</span>
+          <span class="comment-date">{{ comment.created_at.strftime('%d %b %Y · %H:%M') }}</span>
+        </div>
+        <p class="comment-body">{{ comment.body }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty-state" style="padding: 1.5rem; margin-bottom: 1rem;">
+      No comments yet. Be the first to comment.
+    </p>
+    {% endif %}
+
+    <!-- Add Comment Form -->
+    <form method="POST" action="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="comment-form">
+      <div class="form-group">
+        <label for="comment_body">Add a comment</label>
+        <textarea id="comment_body" name="comment_body" rows="2"
+                  placeholder="Write a comment..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

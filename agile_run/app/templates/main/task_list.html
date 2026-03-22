@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}All Tasks{% endblock %}
+
+{% block content %}
+
+<div class="welcome-header">
+  <div>
+    <h2>All Tasks</h2>
+    <p>Browse, filter and manage every task in the system.</p>
+  </div>
+  <a href="{{ url_for('main.create_task') }}" class="btn btn-primary">+ New Task</a>
+</div>
+
+<!-- Filter Bar -->
+<form method="GET" action="{{ url_for('main.task_list') }}" class="filter-bar">
+  <label for="status">Status</label>
+  <select name="status" id="status" onchange="this.form.submit()">
+    <option value="">All</option>
+    {% for s in status_choices %}
+    <option value="{{ s }}" {{ 'selected' if status_filter == s }}>{{ s }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="priority">Priority</label>
+  <select name="priority" id="priority" onchange="this.form.submit()">
+    <option value="">All</option>
+    {% for p in priority_choices %}
+    <option value="{{ p }}" {{ 'selected' if priority_filter == p }}>{{ p }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit" class="btn btn-sm btn-secondary">Filter</button>
+  {% if status_filter or priority_filter %}
+  <a href="{{ url_for('main.task_list') }}" class="btn btn-sm btn-secondary">Clear</a>
+  {% endif %}
+
+  <span style="margin-left:auto;font-size:0.78rem;color:var(--text-muted);">
+    {{ tasks|length }} task{{ 's' if tasks|length != 1 else '' }}
+  </span>
+</form>
+
+{% if tasks %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Assignee</th>
+        <th>Created By</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr class="{{ 'row-overdue' if task.is_overdue else '' }}">
+        <td>{{ task.title }}</td>
+        <td><span class="tag tag-category">{{ task.category }}</span></td>
+        <td><span class="tag tag-{{ task.priority | lower }}">{{ task.priority }}</span></td>
+        <td>
+          <span class="tag tag-status-{{ task.status | replace(' ', '-') | lower }}">
+            {{ task.status }}
+          </span>
+        </td>
+        <td>
+          {{ task.due_date.strftime('%d %b %Y') }}
+          {% if task.is_overdue %}
+            <span class="overdue-label">Overdue</span>
+          {% endif %}
+        </td>
+        <td>{{ task.assignee.username }}</td>
+        <td>{{ task.creator.username }}</td>
+        <td>
+          <a href="{{ url_for('main.edit_task', task_id=task.id) }}"
+             class="btn btn-sm btn-secondary">Edit</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p style="font-size:1.1rem;margin-bottom:0.5rem;">No tasks match your filters.</p>
+  <p>
+    <a href="{{ url_for('main.task_list') }}">Clear filters</a> or
+    <a href="{{ url_for('main.create_task') }}">create a new task</a>.
+  </p>
+</div>
+{% endif %}
+
+{% endblock %}
