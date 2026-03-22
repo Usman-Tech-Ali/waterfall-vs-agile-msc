@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Create Task{% endblock %}
+
+{% block content %}
+<div class="form-card form-card-wide">
+  <h2>Create New Task</h2>
+
+  <form method="POST" action="{{ url_for('main.create_task') }}">
+    <div class="form-group">
+      <label for="title">Title <span class="required">*</span></label>
+      <input type="text" id="title" name="title" required maxlength="120"
+             value="{{ request.form.get('title', '') }}"
+             placeholder="What needs to be done?">
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="3"
+                placeholder="Add more context or details...">{{ request.form.get('description', '') }}</textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="assignee_id">Assignee <span class="required">*</span></label>
+        <select id="assignee_id" name="assignee_id" required>
+          <option value="">— Select user —</option>
+          {% for user in users %}
+          <option value="{{ user.id }}"
+                  {{ 'selected' if request.form.get('assignee_id') == user.id|string }}>
+            {{ user.username }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="due_date">Due Date <span class="required">*</span></label>
+        <input type="date" id="due_date" name="due_date" required
+               value="{{ request.form.get('due_date', '') }}">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="priority">Priority <span class="required">*</span></label>
+        <select id="priority" name="priority" required>
+          {% for p in ['Low', 'Medium', 'High'] %}
+          <option value="{{ p }}"
+                  {{ 'selected' if request.form.get('priority', 'Medium') == p }}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          {% for c in ['Work', 'Personal', 'Urgent'] %}
+          <option value="{{ c }}"
+                  {{ 'selected' if request.form.get('category', 'Work') == c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Create Task</button>
+      <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

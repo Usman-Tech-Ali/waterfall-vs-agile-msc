@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+
+<div class="welcome-header">
+  <div>
+    <h2>Notifications</h2>
+    <p>Stay up to date on task assignments and updates.</p>
+  </div>
+  {% if notifications %}
+  <form method="POST" action="{{ url_for('notifications.mark_all_read') }}">
+    <button type="submit" class="btn btn-secondary btn-sm">Mark all as read</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if notifications %}
+<ul class="notif-list notif-list-full">
+  {% for n in notifications %}
+  <li class="notif-item {{ 'unread' if not n.is_read else 'read' }}">
+    <div class="notif-content">
+      <span class="notif-dot {{ 'dot-unread' if not n.is_read }}"></span>
+      <div>
+        <p class="notif-message">{{ n.message }}</p>
+        <div style="display:flex;align-items:center;gap:1rem;margin-top:0.3rem;">
+          <small class="notif-time">{{ n.created_at.strftime('%d %b %Y · %H:%M') }}</small>
+          {% if n.task_id %}
+          <a href="{{ url_for('tasks.edit_task', task_id=n.task_id) }}"
+             class="btn-link" style="font-size:0.78rem;">View task →</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if not n.is_read %}
+    <form method="POST" action="{{ url_for('notifications.mark_read', notif_id=n.id) }}"
+          style="flex-shrink:0;">
+      <button type="submit" class="btn btn-sm btn-secondary">Mark read</button>
+    </form>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="empty-state">
+  <p style="font-size:1.1rem;margin-bottom:0.5rem;">All caught up!</p>
+  <p>You have no notifications right now.</p>
+</div>
+{% endif %}
+
+{% endblock %}

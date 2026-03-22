@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Header -->
+<div class="welcome-header">
+  <div>
+    <h2>Welcome back, {{ current_user.username }}</h2>
+    <p>Here's what's on your plate today.</p>
+  </div>
+  <a href="{{ url_for('tasks.create_task') }}" class="btn btn-primary">
+    + New Task
+  </a>
+</div>
+
+<!-- Status Summary Cards (CR-002) -->
+<div class="summary-cards">
+  <div class="card card-todo">
+    <div class="card-icon">○</div>
+    <span class="card-count">{{ status_counts['To Do'] }}</span>
+    <span class="card-label">To Do</span>
+  </div>
+  <div class="card card-inprogress">
+    <div class="card-icon">◑</div>
+    <span class="card-count">{{ status_counts['In Progress'] }}</span>
+    <span class="card-label">In Progress</span>
+  </div>
+  <div class="card card-done">
+    <div class="card-icon">●</div>
+    <span class="card-count">{{ status_counts['Done'] }}</span>
+    <span class="card-label">Done</span>
+  </div>
+  <div class="card card-overdue">
+    <div class="card-icon">!</div>
+    <span class="card-count">{{ overdue_count }}</span>
+    <span class="card-label">Overdue</span>
+  </div>
+</div>
+
+<!-- Unread Notifications -->
+{% if notifications %}
+<section class="section">
+  <div class="section-header">
+    <h3>Unread Notifications</h3>
+    <a href="{{ url_for('notifications.list_notifications') }}" class="btn-link" style="font-size:0.8rem;">
+      View all →
+    </a>
+  </div>
+  <ul class="notif-list">
+    {% for n in notifications %}
+    <li class="notif-item unread">
+      <div class="notif-content">
+        <span class="notif-dot dot-unread"></span>
+        <div>
+          <p class="notif-message">{{ n.message }}</p>
+          <span class="notif-time">{{ n.created_at.strftime('%d %b %Y %H:%M') }}</span>
+        </div>
+      </div>
+      <form method="POST" action="{{ url_for('notifications.mark_read', notif_id=n.id) }}" style="flex-shrink:0;">
+        <button type="submit" class="btn btn-sm btn-secondary">Mark read</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<!-- Assigned Tasks -->
+<section class="section">
+  <div class="section-header">
+    <h3>My Assigned Tasks</h3>
+    <a href="{{ url_for('tasks.task_list') }}" class="btn-link" style="font-size:0.8rem;">
+      View all tasks →
+    </a>
+  </div>
+
+  {% if tasks %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Due Date</th>
+          <th>Created By</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr class="{{ 'row-overdue' if task.is_overdue else '' }}">
+          <td>{{ task.title }}</td>
+          <td><span class="tag tag-category">{{ task.category or '—' }}</span></td>
+          <td><span class="tag tag-{{ task.priority | lower }}">{{ task.priority }}</span></td>
+          <td><span class="tag tag-status-{{ task.status | replace(' ', '-') | lower }}">{{ task.status }}</span></td>
+          <td>
+            {{ task.due_date.strftime('%d %b %Y') }}
+            {% if task.is_overdue %}
+              <span class="overdue-label">Overdue</span>
+            {% endif %}
+          </td>
+          <td>{{ task.creator.username }}</td>
+          <td>
+            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="btn btn-sm btn-secondary">
+              Edit
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p style="font-size:1.1rem;margin-bottom:0.5rem;">No tasks assigned to you yet.</p>
+    <p><a href="{{ url_for('tasks.create_task') }}">Create your first task</a> to get started.</p>
+  </div>
+  {% endif %}
+</section>
+
+{% endblock %}

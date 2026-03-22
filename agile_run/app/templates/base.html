@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TaskFlow{% endblock %} — Agile Run</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="nav-brand" href="{{ url_for('main.dashboard') }}">
+    TaskFlow <span class="badge-run">Agile</span>
+  </a>
+
+  <div class="nav-links">
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('main.dashboard') }}"
+         class="{{ 'active' if request.endpoint == 'main.dashboard' }}">
+        Dashboard
+      </a>
+      <a href="{{ url_for('main.task_list') }}"
+         class="{{ 'active' if request.endpoint == 'main.task_list' }}">
+        All Tasks
+      </a>
+      <a href="{{ url_for('main.create_task') }}"
+         class="{{ 'active' if request.endpoint == 'main.create_task' }}">
+        + New Task
+      </a>
+      <a href="{{ url_for('main.notifications') }}"
+         class="notif-link {{ 'active' if request.endpoint == 'main.notifications' }}">
+        Notifications
+        {% set unread = current_user.unread_count() %}
+        {% if unread > 0 %}
+          <span class="badge">{{ unread }}</span>
+        {% endif %}
+      </a>
+      <span class="nav-user">{{ current_user.username }}</span>
+      <a href="{{ url_for('auth.logout') }}" class="btn-logout">Logout</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}"
+         class="{{ 'active' if request.endpoint == 'auth.login' }}">Login</a>
+      <a href="{{ url_for('auth.register') }}"
+         class="{{ 'active' if request.endpoint == 'auth.register' }}">Register</a>
+    {% endif %}
+  </div>
+</nav>
+
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <p>MSc IT with Project Management &mdash; Agile Run &nbsp;|&nbsp; University of the West of Scotland</p>
+</footer>
+
+</body>
+</html>
